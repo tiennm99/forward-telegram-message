@@ -1,5 +1,6 @@
 import getpass
 
+from telethon import events
 from telethon.errors import SessionPasswordNeededError
 from telethon.sync import TelegramClient
 
