@@ -11,7 +11,6 @@ client = TelegramClient(phone, api_id, api_hash)
 @client.on(events.NewMessage(chats=[source_group_id]))
 async def forward_message(event):
     try:
-        # Forward the message to the target group
         await client.forward_messages(target_group_id, event.message)
     except Exception as e:
         print(f"Exception on forward_message: {str(e)}")
