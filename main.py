@@ -1,26 +1,32 @@
-import getpass
+import asyncio
 
+from telethon import TelegramClient
 from telethon import events
-from telethon.errors import SessionPasswordNeededError
-from telethon.sync import TelegramClient
 
 from config import *
 
-# client = TelegramClient(phone, api_id, api_hash)
+client = TelegramClient(phone, api_id, api_hash)
 
-# client.connect()
-# if not client.is_user_authorized():
-#     client.send_code_request(phone)
-#     try:
-#         client.sign_in(code=input('Enter code: '))
-#     except SessionPasswordNeededError:
-#         client.sign_in(password=getpass.getpass())
 
-# client.start(phone)
+@client.on(events.NewMessage(chats=[source_group_id]))
+async def forward_message(event):
+    try:
+        # Forward the message to the target group
+        await client.forward_messages(target_group_id, event.message)
+    except Exception as e:
+        print(f"Exception on forward_message: {str(e)}")
 
-with TelegramClient('session_name', api_id, api_hash) as client:
-    @client.on(events.NewMessage(chats=source_group_id))
-    async def handler(event):
-        await client.forward_messages(destination_group_id, event.message)
 
-    client.run_until_disconnected()
+async def main():
+    while True:
+        try:
+            print("Starting...")
+            await client.start(phone)
+            print("Bot is running.")
+            await client.run_until_disconnected()
+        except Exception as e:
+            print(f"Exception on main: {str(e)}. Restarting...")
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
