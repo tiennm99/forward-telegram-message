@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -70,6 +71,18 @@ func run(ctx context.Context) error {
 	if appHash == "" {
 		return errors.New("no app hash")
 	}
+
+	sourceChatId, err := strconv.ParseInt(os.Getenv("SOURCE_CHAT_ID"), 10, 0)
+	if err != nil {
+		return errors.New("no source chat id")
+	}
+
+	targetChatId, err := strconv.ParseInt(os.Getenv("TARGET_CHAT_ID"), 10, 0)
+	if err != nil {
+		return errors.New("no target chat id")
+	}
+
+	fmt.Printf("forward from %d to %d\n", sourceChatId, targetChatId)
 
 	// Setting up session storage.
 	// This is needed to reuse session and not login every time.
@@ -181,6 +194,57 @@ func run(ctx context.Context) error {
 		}
 
 		fmt.Printf("%s: %s\n", p, msg.Message)
+
+		api := client.API()
+		targetPeer, err := storage.FindPeer(ctx, peerDB, &tg.PeerChat{ChatID: targetChatId})
+		_, err = api.MessagesForwardMessages(ctx, &tg.MessagesForwardMessagesRequest{
+			ToPeer:   targetPeer.AsInputPeer(),
+			FromPeer: p.AsInputPeer(),
+			ID:       []int{msg.ID},
+			RandomID: []int64{rand.Int63()},
+		})
+
+		if err != nil {
+			fmt.Printf("%s\n", err)
+		}
+
+		return err
+	})
+
+	dispatcher.OnNewChannelMessage(func(ctx context.Context, e tg.Entities, u *tg.UpdateNewChannelMessage) error {
+		msg, ok := u.Message.(*tg.Message)
+		if !ok {
+			return nil
+		}
+		if msg.Out {
+			// Outgoing message.
+			return nil
+		}
+
+		// Use PeerID to find peer because *Short updates does not contain any entities, so it necessary to
+		// store some entities.
+		//
+		// Storage can be filled using PeerCollector (i.e. fetching all dialogs first).
+		p, err := storage.FindPeer(ctx, peerDB, msg.GetPeerID())
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("%s: %s\n", p, msg.Message)
+
+		api := client.API()
+		targetPeer, err := storage.FindPeer(ctx, peerDB, &tg.PeerChat{ChatID: targetChatId})
+		_, err = api.MessagesForwardMessages(ctx, &tg.MessagesForwardMessagesRequest{
+			ToPeer:   targetPeer.AsInputPeer(),
+			FromPeer: p.AsInputPeer(),
+			ID:       []int{msg.ID},
+			RandomID: []int64{rand.Int63()},
+		})
+
+		if err != nil {
+			fmt.Printf("%s\n", err)
+		}
+
 		return nil
 	})
 

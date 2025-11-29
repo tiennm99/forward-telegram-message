@@ -59,4 +59,4 @@ The application will connect to Telegram and start forwarding messages from the 
 
 ## The Original Python Version
 
-The original Python version of this project can be found at the `feature/python` branch.
+*In 2025, I rewrote this project using Go. The original Python version of this project can be found at the `feature/python` branch.*
