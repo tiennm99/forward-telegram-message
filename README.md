@@ -1,35 +1,62 @@
 # forward-telegram-message
 
-Mirror Telegram messages between two chats using Telethon — runs as a user-account, not a bot.
+A Telegram message forwarder that forwards messages from a source chat to a target chat.
 
-## Quick start
+This project is implemented in Go using the gotd/td Telegram client library.
 
+## Features
+
+- Forward messages from one Telegram chat to another
+- Automatic reconnection on disconnect
+- Proper error handling and logging
+- Environment variable configuration
+
+## Requirements
+
+- Go 1.24 or higher
+- Telegram API credentials (visit https://my.telegram.org/ to get them)
+
+## Installation
+
+1. Clone the repository:
 ```bash
-cp .env.example .env
-# Fill in PHONE, API_ID, API_HASH, SOURCE_GROUP_ID, TARGET_GROUP_ID
-pip install -r requirements.txt
-python main.py
+git clone https://github.com/tiennm99/forward-telegram-message.git
+cd forward-telegram-message
 ```
 
-Get `API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org).
+2. Install dependencies:
+```bash
+go mod tidy
+```
 
 ## Configuration
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PHONE` | Yes | Your Telegram phone number (e.g. `+84912345678`) |
-| `API_ID` | Yes | App API ID from my.telegram.org |
-| `API_HASH` | Yes | App API hash from my.telegram.org |
-| `SOURCE_GROUP_ID` | Yes | ID of the source chat/group to mirror from |
-| `TARGET_GROUP_ID` | Yes | ID of the destination chat/group to forward into |
+Create a `.env` file in the project root with the following content:
 
-## Notes
+```env
+TG_PHONE=+1234567890
+API_ID=123456789
+API_HASH=0123456789abcdef0123456789abcdef
+SOURCE_GROUP_ID=-123456789
+TARGET_GROUP_ID=-123456789
+```
 
-- Runs as a **user account** (Telethon), not a bot — requires first-time interactive login to generate a session file.
-- Forwards both text messages and media (photos, documents, videos).
-- Re-uses the session file on subsequent runs; no re-auth needed.
-- `SOURCE_GROUP_ID` and `TARGET_GROUP_ID` can be negative (supergroup IDs) or positive (private chat IDs).
+Replace the values with your Telegram credentials and chat IDs.
 
-## License
+## Usage
 
-Apache-2.0 — see [LICENSE](LICENSE).
+1. Install dependencies:
+```bash
+go mod tidy
+```
+
+2. Run the application:
+```bash
+go run .
+```
+
+The application will connect to Telegram and start forwarding messages from the source chat to the target chat.
+
+## The Original Python Version
+
+*In 2025, I rewrote this project using Go. The original Python version of this project can be found at the `feature/python` branch.*
